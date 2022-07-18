@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="icon"   href="static/images/favicon.png" type="image/png" />
+	<link rel="stylesheet" type="text/css" href="static/css/main.css">
+	<link rel="stylesheet" type="text/css" href="static/css/media-queries.css">
+	<title>SD Diagnóstico Visual | Administrador-Editar paciente</title>
+	<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script type="text/javascript">
+		function agregar_examen(){
+			//save_archivo();
+			const queryString = window.location.search;
+			const urlParams = new URLSearchParams(queryString);
+			cedula_paciente = urlParams.get('cedula');
+			nombre_examen = $("#nombreExamen").val();
+			examen = $("#examen").val();
+			fecha_examen = $("#FechaExamen").val();
+			lectura = $("#lectura").val();
+			$.post("/archivos/new", { cedulaPaciente:cedula_paciente, nombreExamen:nombre_examen, examen:examen, fechaExamen:fecha_examen, lectura:lectura  } ).done(function( data ) {
+				alert( "Examen Agregado");
+				save_archivo();
+			});
+		}
+		function save_archivo() {
+			var data = new FormData(jQuery('form')[1]);
+			console.log(data);
+
+			jQuery.ajax({
+				url: '/uploader',
+				data: data,
+				cache: false,
+				contentType: 'multipart/form-data',
+				processData: false,
+				method: 'POST',
+				type: 'POST', // For jQuery < 1.9
+				success: function(data){
+					alert(data);
+					location.reload();
+				}
+			});
+		}
+
+
+		function delete_archivo(id_archivo) {
+			$.post("/archivos/delete", { id: id_archivo } ).done(function( data ) {
+				alert( "Archivo Borrado");
+			});	
+		}
+	</script>
+</head>
+<body>
+	<header>
+		<div class="nav-principal">
+			<div class="nav-principal_contenedor">
+				<a href="/logout">Cerrar sesión</a>
+			</div>
+		</div>
+		<div class="nav-banner">
+			<div class="nav-grid-banner_logo">
+				<div class="grid-logo-boton">
+					<img src="static/images/logo-SD.png" alt="Logo">
+				<div class="regresar-button">
+					<div class="agregar-button">
+					<a href="/admin"><i class="icono-agregar fas fa-arrow-left"></i></a>
+					</div>
+					<a href="/admin"><p class="regresar">Regresar</p></a>
+				</div>
+				</div>
+				
+				<div class="nav-titulos">
+						<h1>Información del paciente</h1>
+						<div class="info-usuario">
+							{% for paciente in pacientes %}
+							<p class="nombre-usuario">{{ paciente['nombre'] }}</p>
+							<p class="doumento-usuario">{{ paciente['cedula'] }}</p>
+							{% endfor %}
+						</div>
+				</div>	
+			</div>
+		</div>
+	</header>
+
+	<main class="main-contenedor-add-remisor">
+		<form action="usuarios/update" method="post">
+			<section class="grid-main-contenedor-add-remisor">
+				<img src="static/images/img-pacientes.png">
+				<div class="form-add-paciente">
+					<div class="grid-form">
+						{% for paciente in pacientes %}
+							<div class="form-campos-datos-personales">
+								<div class="grid-campos-form">
+									<h2>Nombre / Razón social</h2>
+									<p> {{paciente['nombre']}}</p>
+									<hr>
+								</div>
+								<div class="grid-campos-form">
+									<h2>Apellido</h2>
+									<p>{{paciente['apellido']}}</p>
+									<hr>
+								</div>
+								<div class="grid-campos-form">
+									<h2>Tipo de documento</h2>
+									<p> {{paciente['tipoDocumento']}}</p>
+									<hr>
+								</div>
+								<div class="grid-campos-form">
+									<h2>Contraseña</h2>
+									<input class="input-campo_texto" type="password" name="{{paciente['password']}}" readonly>
+									<a href="#"><i class="icono-editar-solo fas fa-pencil-alt">static/</i></a>
+								</div>
+								<div class="grid-campos-form">
+									<h2>Número de documento</h2>
+									<p> {{paciente['cedula']}}</p>
+									<hr>
+								</div>
+								<div class="grid-campos-form">
+									<h2>Fecha de nacimiento</h2>
+									<p> {{paciente['fechaNacimiento']}}</p>
+									<hr>	
+								</div>
+								<div class="grid-campos-form">
+									<h2>Dirección consultorio</h2>
+									<input class="input-campo_texto" type="text" placeholder="{{paciente['direccion']}}">
+								</div>
+								<div class="grid-campos-form">
+									<h2>Celular</h2>
+									<input class="input-campo_texto" type="text" name="telefono" placeholder="{{paciente['telefono']}}">
+								</div>
+								<div class="grid-campos-form">
+									<h2>Correo</h2>
+									<input class="input-campo_texto" type="text" name="email1" placeholder="{{paciente['email1']}}">
+								</div>
+								<div class="grid-campos-form">
+									<h2>Correo 2</h2>
+									<input class="input-campo_texto" type="text" name="email2" placeholder="{{paciente['email2']}}">
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+					<div class="add-paciente-button add-btn-remisor">
+						<button class="boton-sumit" type="submit">ACTUALIZAR PACIENTE</button>
+					</div>
+				</div>
+				
+			</section>
+		</form>
+		
+		
+			<section class="contenedor-asignar-pacientes">
+				<div class="grid-contenedor-examenes-editar-pacientes">
+					<h1 class="titulo-editar-paciente" >Exámenes</h1>
+					<p>Editar lecturas</p>
+					<div class="editar-button">
+						<a href="/editar-lectura"><i class="icono-agregar fas fa-pencil-alt"></i></a>
+					</div>
+
+				</div>
+
+				<div class="grid-main-contenendor-examenes">
+
+				<div class="contenedor-con-campo-eliminar">
+					<div>FECHA TOMA DEL EXAMEN</div>
+					<div>NOMBRE DEL EXAMEN</div>
+					<div>RESULTADO</div>
+					<div>LECTURA</div>
+					<div>-</div>
+				</div>
+				{% for e in examenes %}
+				<div class="contenedor-examenes-resultados-campo-eliminar">
+					<div>{{e['Fecha_examen']}}</div>
+					<div>{{e['nombreExamen']}}</div>
+					<div>
+						<a href="{{e['examen']}}"><i class="iconoDescarga fas fa-download"></i></a>
+					</div>
+					<div>
+						<a href="#"><i class="iconoDescarga-lectura fas fa-download"></i></a>
+					</div>
+					<div>
+						<a href="javascript:delete_archivo({{e['id']}})"><i class="iconoEliminar fas fa-trash-alt"></i></a>
+					</div>
+				</div>
+				{% endfor %}
+				
+				
+				
+				
+				
+
+			</div>
+
+			<div class="main-paginacion-examenes">
+				Paginacion
+			</div>
+
+			<form action="/uploader" method="post" enctype="multipart/form-data" name="fileinfo">
+				<div class="agregar-examenes">
+								<h1 class="titulo-examenes">Agregar exámenes</h1>
+								<div class="nombre-examen">
+									<h2>Nombre del Exámen</h2>
+									<input class="input-campo_texto" type="text" id="nombreExamen" name="nombreExamen">
+									<h2>Cargar Exámen</h2>
+									<input class="input-campo_texto" type="file" id="examen" name="examen">
+								</div>
+								<div class="fecha-toma-examen">
+									<h2>Fecha toma del examen</h2>
+									<input class="input-campo_texto" type="date" id="FechaExamen">
+								</div>
+								<div class="custom-input-file">
+									<h2>Cargar lectura</h2>
+									<input type="file" id="lectura">
+								</div>
+								<div class="add-paciente-button">
+									<button type="button" class="boton-sumit" onClick="agregar_examen({{request.args.get('cedula')}})">ENVIAR</button>
+								</div>
+							
+								
+				</div>
+			</form>
+					
+			</section>
+	</main>
+
+
+	<footer>
+		<div class="info-contacto">
+			<p>Si tienes algún inconveniente con los resultados puedes escribirnos a <span>examenes@sdiagnosticovisual.com</span> o
+ 			llamarnos al <span>320 2579898</span></p>
+
+		</div>
+		<img class="btn-whatsapp" src="https://clientes.dongee.com/whatsapp.png" width="64" height="64" alt="Whatsapp" onclick="window.location.href='https://wa.me/573224509872?text=Hola!%20Tengo%20una%20inquietud%20con%20mis%20resultados'">
+	</footer>
+</body>
+</html>

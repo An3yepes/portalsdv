@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="icon"   href="static/images/favicon.png" type="image/png" />
+	<link rel="stylesheet" type="text/css" href="static/css/main.css">
+	<link rel="stylesheet" type="text/css" href="static/css/media-queries.css">
+	<title>SD Diagnóstico Visual | Administrador-Agregar paciente</title>
+	<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+</head>
+<body>
+	<header>
+		<div class="nav-principal">
+			<div class="nav-principal_contenedor">
+				<a href="/logout">Cerrar sesión</a>
+			</div>
+		</div>
+		<div class="nav-banner">
+			<div class="nav-grid-banner_logo">
+				<div class="grid-logo-boton">
+					<img src="static/images/logo-SD.png" alt="Logo">
+				<div class="regresar-button">
+					<div class="agregar-button">
+					<a href="/admin"><i class="icono-agregar fas fa-arrow-left"></i></a>
+					</div>
+					<a href="/admin"><p class="regresar">Regresar</p></a>
+				</div>
+				</div>
+				
+				<div class="nav-titulos">
+						<h1>Nuevo paciente</h1>
+				</div>	
+			</div>
+		</div>
+	</header>
+	<main class="main-contenedor-add-paciente">
+		<section class="grid-main-contenedor-add-paciente">
+			<img src="static/images/img-pacientes.png">
+			<form action="usuarios/new" method="post">
+				<section class="form-add-paciente">
+					<div class="grid-form">
+							<div class="form-campos-datos-personales">
+								<div>
+									<h2>Nombre</h2>
+									<input class="input-campo_texto" type="text" name="nombre" required>
+								</div>
+								<div>
+									<h2>Apellido</h2>
+									<input class="input-campo_texto" type="text" name="apellido" required>
+								</div>
+								<div>
+									<h2>Tipo de documento</h2>
+									<select name="tipoDocumento"  class="input-campo_texto" required>
+									<option value="Cédula">Cédula</option> 
+									<option value="Pasaporte">Pasaporte</option>
+									<option value="Nit">NIT</option> 
+									</select>
+								</div>
+								<div>
+									<h2>Contraseña</h2>
+									<input class="input-campo_texto" type="password" name="password" minlength="8" required>
+								</div>
+								<div>
+									<h2>Número de documento</h2>
+									<input class="input-campo_texto" type="text" name="cedula" required>
+								</div>
+								<div>
+									<h2>Fecha de nacimiento</h2>
+									<input class="input-campo_texto" type="date" name="fechaNacimiento">
+								</div>
+								<div>
+									<h2>Dirección</h2>
+									<input class="input-campo_texto" type="text" name="direccion">
+								</div>
+								<div>
+									<h2>Celular</h2>
+									<input class="input-campo_texto" type="tel" name="telefono" minlength="7" maxlength="10" required>
+								</div>
+								<div>
+									<h2>Correo</h2>
+									<input class="input-campo_texto" type="email" name="email1" required>
+								</div>
+								<div>
+									<h2>Correo 2</h2>
+									<input class="input-campo_texto" type="email" name="email2">
+									<input type="hidden" name="rol" value="paciente">
+									<input type="hidden" name="fechaCreacionUsuario">
+								</div>
+							</div>
+						<div class="agregar-examenes">
+							<h1 class="titulo-examenes">Agregar exámenes</h1>
+							<div class="nombre-examen">
+								<h2>Nombre del examen</h2>
+								<input class="input-campo_texto" type="text" name="examen">
+							</div>
+							<div class="custom-input-file">
+								<h2>Cargar examen</h2>
+								<input class="input-campo_texto" type="file" name="URLExamen">
+
+							</div>
+							<div class="custom-input-file">
+								<h2>Cargar lectura</h2>
+								<input class="input-campo_texto" type="file" name="lectura">
+								
+							</div>
+							<div class="fecha-toma-examen">
+								<h2>Fecha toma del examen</h2>
+								<input class="input-campo_texto" type="date" name="fechaExamen">
+							</div>
+						</div>
+						<div class="add-paciente-button">
+							<button class="boton-sumit" type="submit">AGREGAR PACIENTE</button>
+						</div>
+					</div>
+				</section>
+			</form>
+			
+		</section>
+		
+	</main>
+
+	<footer>
+		<div class="info-contacto">
+			<p>Si tienes algún inconveniente con los resultados puedes escribirnos a <span>examenes@sdiagnosticovisual.com</span> o
+ 			llamarnos al <span>320 2579898</span></p>
+
+		</div>
+		<img class="btn-whatsapp" src="https://clientes.dongee.com/whatsapp.png" width="64" height="64" alt="Whatsapp" onclick="window.location.href='https://wa.me/573224509872?text=Hola!%20Tengo%20una%20inquietud%20con%20mis%20resultados'">
+	</footer>
+
+
+</body>
+</html>
