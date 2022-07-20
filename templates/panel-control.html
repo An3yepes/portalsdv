@@ -46,20 +46,27 @@
 					<a href="/agregar-paciente"><i class="icono-agregar fas fa-plus"></i></a>
 				</div>
 			</div>
-			<div class="buscador">
-				<input class="input-campo_busqueda" type="text" name="user">
-				<div class="buscador-button">
-					<a href="#"><i class="iconoBuscar fas fa-search"></i></a>
+			<form action="/admin" method="get">
+				<div class="buscador">
+					<input class="input-campo_busqueda" type="text" name="paciente" id="paciente">
+					<div class="buscador-button">
+						<button type="submit"><i class="iconoBuscar fas fa-search"></i></button>
+					</div>
 				</div>
-			</div>
-			{% with messages = get_flashed_messages() %}
+			</form>
+			<form action="/admin" method="get">
+				<button type="submit">Borrar busquedas</button>
+			</form>
+			<br>
+			{% with messages = get_flashed_messages(category_filter=["pacientes"]) %}
 			{% if messages %}
 			<div class="buscador-alert">
 				<div>
 					<a href="#"><i class="iconoAlerta fas fa-times-circle"></i></a>
 				</div>
-				<p>No se encontraron datos relacionados1. Por favor inténtelo de nuevo.</p>
-
+					{% for message in messages %}
+					<p>{{ message }}</p>
+					{% endfor %}
 			</div>
 			{% endif %}
 			{% endwith %}
@@ -95,20 +102,23 @@
 					<a href="/agregar-medico"><i class="icono-agregar fas fa-plus"></i></a>
 				</div>
 			</div>
-			<div class="buscador">
-				<input class="input-campo_busqueda" type="text" name="user">
-				<div class="buscador-button">
-					<a href="#"><i class="iconoBuscar fas fa-search"></i></a>
+			<form action="/admin" method="get">
+				<div class="buscador">
+					<input class="input-campo_busqueda" type="text" name="remisor" id="remisor">
+					<div class="buscador-button">
+						<button type="submit"><i class="iconoBuscar fas fa-search"></i></button>
+					</div>
 				</div>
-			</div>
-			{% with messages = get_flashed_messages() %}
+			</form>
+			{% with messages = get_flashed_messages(category_filter=["medicos"]) %}
 			{% if messages %}
 			<div class="buscador-alert">
 				<div>
 					<a href="#"><i class="iconoAlerta fas fa-times-circle"></i></a>
 				</div>
-				<p>No se encontraron datos relacionados1. Por favor inténtelo de nuevo.</p>
-
+					{% for message in messages %}
+					<p>{{ message }}</p>
+					{% endfor %}
 			</div>
 			{% endif %}
 			{% endwith %}
