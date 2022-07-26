@@ -1,12 +1,11 @@
 import os
 from flask import Flask, redirect, request, url_for, flash, render_template, send_from_directory, session
 from flask_restful import Api, reqparse
+from flask_mail import Mail, Message
 
 from fileinput import filename
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
-
-from sqlalchemy import select
 
 from config import config
 from endpoints import *
@@ -20,6 +19,12 @@ def create_app(enviroment):
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config.from_object(enviroment)
     app.secret_key = 'Er3z1ns0p0rt4b3!'
+    app.config['MAIL_SERVER']='smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = 'lizethportilla328@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'app_password'
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
 
     with app.app_context():
         db.init_app(app)
@@ -29,7 +34,7 @@ def create_app(enviroment):
 
 app = create_app(config['development'])
 api = Api(app)
-
+mail = Mail(app)
 
 parser_logeo = reqparse.RequestParser()
 
@@ -50,13 +55,13 @@ def admin():
         paciente_cedula = request.args.get('paciente', None)
         remisor_cedula = request.args.get('remisor', None)
         if paciente_cedula: 
-            pacientes = Usuario.query.filter_by(rol='paciente', cedula=paciente_cedula).paginate(1,5,error_out=False)
+            pacientes = Usuario.query.filter_by(rol='paciente', cedula=paciente_cedula)
         else:
-            pacientes = Usuario.query.filter_by(rol='paciente').paginate(1,5,error_out=False)
+            pacientes = Usuario.query.filter_by(rol='paciente')
         if remisor_cedula:
-            remisores = Usuario.query.filter_by(rol='medico', cedula=remisor_cedula).paginate(1,5,error_out=False)
+            remisores = Usuario.query.filter_by(rol='medico', cedula=remisor_cedula)
         else:
-            remisores = Usuario.query.filter_by(rol='medico').paginate(1,5,error_out=False)
+            remisores = Usuario.query.filter_by(rol='medico')
 
         if pacientes.total == 0:
             flash("Búsqueda sin resultados", 'pacientes')
@@ -77,6 +82,18 @@ def loginError():
 def recuperarpassword():
     return render_template('recover.html', title='Recuperar Contraseña')
 
+@app.route("/envio-password")
+def envio_password():
+    recipients = []
+    email = request.args.get('email', None)
+    if email:
+        recipients.append(email)
+        usuario = Usuario.query.filter_by(email1=email).first()
+        if usuario:
+            msg = Message('Recuperación de contraseña', sender='lizethportilla328@gmail.com', recipients = recipients)
+            msg.body = f"Esta es la contraseña para el usuario {email}: {usuario.password}"
+        mail.send(msg)
+    return redirect(url_for('index'))
 
 @app.route('/agregar-medico')
 def addmedico():
