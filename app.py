@@ -92,7 +92,12 @@ def envio_password():
         if usuario:
             msg = Message('Recuperación de contraseña', sender='lizethportilla328@gmail.com', recipients = recipients)
             msg.body = f"Esta es la contraseña para el usuario {email}: {usuario.password}"
-        mail.send(msg)
+            mail.send(msg)
+            flash("Usuario Creado con exito", 'exito')
+        else:
+            flash("No se encuentra un usuario con ese email", 'error')
+    else:
+        flash("Debe introducir un email", 'error')
     return redirect(url_for('index'))
 
 @app.route('/agregar-medico')
