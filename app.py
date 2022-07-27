@@ -21,8 +21,8 @@ def create_app(enviroment):
     app.secret_key = 'Er3z1ns0p0rt4b3!'
     app.config['MAIL_SERVER']='smtp.gmail.com'
     app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'juankrios15@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'oesqlrsipzrykuac'
+    app.config['MAIL_USERNAME'] = 'lizethportilla382@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'app_password'
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
 
