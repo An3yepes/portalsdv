@@ -21,8 +21,8 @@ def create_app(enviroment):
     app.secret_key = 'Er3z1ns0p0rt4b3!'
     app.config['MAIL_SERVER']='smtp.gmail.com'
     app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'lizethportilla328@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'app_password'
+    app.config['MAIL_USERNAME'] = 'juankrios15@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'oesqlrsipzrykuac'
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
 
@@ -93,7 +93,7 @@ def envio_password():
             msg = Message('Recuperación de contraseña', sender='lizethportilla328@gmail.com', recipients = recipients)
             msg.body = f"Esta es la contraseña para el usuario {email}: {usuario.password}"
             mail.send(msg)
-            flash("Usuario Creado con exito", 'exito')
+            flash("Se ha enviado la contraseña a su correo", 'exito')
         else:
             flash("No se encuentra un usuario con ese email", 'error')
     else:
