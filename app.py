@@ -1,11 +1,14 @@
 import os
-from flask import Flask, redirect, request, url_for, flash, render_template, send_from_directory, session
+from flask import Flask, jsonify, redirect, request, url_for, flash, render_template, send_from_directory, session
 from flask_restful import Api, reqparse
-from flask_mail import Mail, Message
+from flask import Blueprint
+from flask_paginate import Pagination, pacientes
 
 from fileinput import filename
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
+
+from sqlalchemy import select
 
 from config import config
 from endpoints import *
@@ -18,13 +21,7 @@ def create_app(enviroment):
     app = Flask(__name__, static_folder='static')
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config.from_object(enviroment)
-    app.secret_key = 'Er3z1ns0p0rt4b3!'
-    app.config['MAIL_SERVER']='smtp.gmail.com'
-    app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'lizethportilla382@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'app_password'
-    app.config['MAIL_USE_TLS'] = False
-    app.config['MAIL_USE_SSL'] = True
+    app.secret_key = 'Er3z1ns0p0rt4b!3'
 
     with app.app_context():
         db.init_app(app)
@@ -34,7 +31,7 @@ def create_app(enviroment):
 
 app = create_app(config['development'])
 api = Api(app)
-mail = Mail(app)
+
 
 parser_logeo = reqparse.RequestParser()
 
@@ -54,21 +51,28 @@ def admin():
     if 'user' in session and session['rol'] == "admin":
         paciente_cedula = request.args.get('paciente', None)
         remisor_cedula = request.args.get('remisor', None)
-        if paciente_cedula: 
-            pacientes = Usuario.query.filter_by(rol='paciente', cedula=paciente_cedula)
+        page = int(request.args.get('page', 1))
+        tamano_page = int(2)
+        remisores = Usuario.query.filter_by(rol='medico').paginate(page, tamano_page, error_out=False)
+
+        if paciente_cedula:
+            pacientes = Usuario.query.filter_by(rol='paciente', cedula=paciente_cedula).paginate(1,1, error_out=False)
         else:
-            pacientes = Usuario.query.filter_by(rol='paciente')
+            pacientes = Usuario.query.filter_by(rol='paciente').paginate(page, tamano_page, error_out=False)
+
         if remisor_cedula:
-            remisores = Usuario.query.filter_by(rol='medico', cedula=remisor_cedula)
+            remisores = Usuario.query.filter_by(
+                rol='medico', cedula=remisor_cedula).paginate(page, tamano_page, error_out=False)
         else:
-            remisores = Usuario.query.filter_by(rol='medico')
+            remisores = Usuario.query.filter_by(
+                rol='medico').paginate(page, tamano_page, error_out=False)
 
         if pacientes.total == 0:
             flash("Búsqueda sin resultados", 'pacientes')
         if remisores.total == 0:
             flash("Búsqueda sin resultados", 'medicos')
-            
-        return render_template('panel-control.html', title='Admin', remisores=remisores.items, pacientes=pacientes.items)
+    
+        return render_template('panel-control.html', title='Admin', remisores=remisores, pacientes=pacientes)
     else:
         return "No tiene Permisos para acceder aquí"
 
@@ -82,23 +86,6 @@ def loginError():
 def recuperarpassword():
     return render_template('recover.html', title='Recuperar Contraseña')
 
-@app.route("/envio-password")
-def envio_password():
-    recipients = []
-    email = request.args.get('email', None)
-    if email:
-        recipients.append(email)
-        usuario = Usuario.query.filter_by(email1=email).first()
-        if usuario:
-            msg = Message('Recuperación de contraseña', sender='lizethportilla328@gmail.com', recipients = recipients)
-            msg.body = f"Esta es la contraseña para el usuario {email}: {usuario.password}"
-            mail.send(msg)
-            flash("Se ha enviado la contraseña a su correo", 'exito')
-        else:
-            flash("No se encuentra un usuario con ese email", 'error')
-    else:
-        flash("Debe introducir un email", 'error')
-    return redirect(url_for('index'))
 
 @app.route('/agregar-medico')
 def addmedico():
@@ -117,21 +104,48 @@ def addpaciente():
 @app.route('/medico-lector')
 def vistalector():
     if 'user' in session and session['rol'] == "admin" or "lector":
-        return render_template('vadmlector.html', title='Agregar Lecturas y Exámenes')
+        paciente_cedula = request.args.get('paciente', None)
+        page = int(request.args.get('page', 1))
+        tamano_page = int(10)
+        archivos = []
+        if paciente_cedula:
+            pacientes = Usuario.query.filter_by(rol='paciente', cedula=paciente_cedula).paginate(1,1, error_out=False)
+        else:
+            pacientes = Usuario.query.filter_by(rol='paciente').paginate(page, tamano_page, error_out=False)
+        if pacientes.total == 0:
+            flash("Búsqueda sin resultados", 'pacientes')
+            
+        return render_template('vadmlector.html', title='Admin', pacientes=pacientes.items, archivos=archivos)
     else:
         return "No tiene Permisos para acceder aquí"
 
 @app.route('/editar-lectura')
 def editarlectura():
+    examen = request.args.get('examen')
+    documentoUsuario = request.args.get('cedulaPaciente')
     if 'user' in session and session['rol'] == "admin" or "lector":
-        return render_template('veditarlectura.html', title='Editar Lecturas y Exámenes')
+        archivo = Archivos.query.filter_by(id=examen, cedulaPaciente=documentoUsuario).first()
+        return render_template('veditarlectura.html', title='Editar Lecturas y Exámenes', archivo=archivo)
     else:
         return "No tiene Permisos para acceder aquí"
 
 @app.route('/medico')
 def vistamedico():
     if 'user' in session and session['rol'] == "admin" or "medico":
-        return render_template('vmedico.html', title='Panel del Médico')
+        cedula = request.args.get('cedula')
+        datos_medico = Usuario.query.filter_by(cedula=cedula).all()
+        pacientes_relaciones = Relacion.query.filter_by(cedulaMedico=cedula).all()
+        pacientes_relacionados = []
+        for relacion in pacientes_relaciones:
+            paciente = Usuario.query.filter_by(cedula=relacion.cedulaPaciente).first()
+            pacientes_relacionados.append({
+                'id': relacion.id,
+                'creado': paciente.fechaCreacionUsuario,
+                'cedula': paciente.cedula,
+                'nombre': paciente.nombre,
+                'apellido': paciente.apellido
+            })
+        return render_template('vmedico.html', title='Panel del Médico', datos=datos_medico, pacientes_relacionados=pacientes_relacionados)
     else:
         return "No tiene Permisos para acceder aquí"
 
@@ -140,7 +154,8 @@ def vistapaciente():
     if 'user' in session and session['rol'] == "admin" or "paciente":
         cedula = request.args.get('cedula')
         datos_paciente = Usuario.query.filter_by(cedula=cedula).all()
-        return render_template('vpaciente.html', title='Panel del Paciente', pacientes=datos_paciente)
+        archivos = Archivos.query.filter_by(cedulaPaciente=cedula).all()
+        return render_template('vpaciente.html', title='Paciente', pacientes=datos_paciente, examenes=archivos, cedula=cedula)
     else:
         return "No tiene Permisos para acceder aquí"
 
@@ -166,7 +181,6 @@ def updatemedico():
         pacientes_relaciones = Relacion.query.filter_by(cedulaMedico=cedula).all()
         pacientes_relacionados = []
         for relacion in pacientes_relaciones:
-            #print(relacion.cedulaPaciente)
             paciente = Usuario.query.filter_by(cedula=relacion.cedulaPaciente).first()
             pacientes_relacionados.append({
                 'id': relacion.id,
@@ -209,7 +223,7 @@ def delete_examen():
 @app.route("/uploader", methods=['POST'])
 def uploader():
     if request.method == "POST":
-        
+        filename_lectura = ''
         form = request.form
         cedula = form.get('cedula','')
         nombre = form.get('nombreExamen','Examen sin nombre')
@@ -231,6 +245,22 @@ def uploader():
         db.session.add(carga)
         db.session.commit()
         return redirect(url_for('editpaciente', cedula=cedula))
+
+@app.route("/addlectura", methods=['POST'])
+def addlectura():
+    if request.method == "POST":
+        filename_lectura = ''
+        form = request.form
+        examen = form.get('examen','')
+        
+        lectura = request.files['lectura']
+        if lectura.filename != '':
+            filename_lectura = secure_filename(lectura.filename)
+            lectura.save(os.path.join(app.config['UPLOAD_FOLDER'], filename_lectura)) 
+        carga = Archivos(lectura=filename_lectura)
+        db.session.add(carga)
+        db.session.commit()
+        return redirect(url_for('editarlectura', examen=examen))
     
 @app.route('/uploads/<name>')
 def download_file(name):
@@ -241,12 +271,15 @@ api.add_resource(Usuarios, '/usuarios/')
 api.add_resource(GetUsuario, '/usuarios/get/<string:usuario_id>')
 api.add_resource(NewUsuario, '/usuarios/new')
 api.add_resource(DeleteUsuario, '/usuarios/delete')
+api.add_resource(DeleteVariosUsuarios, '/usuarios/delete_varios')
 api.add_resource(UpdateUsuario, '/usuarios/update')
 
 api.add_resource(AgregarRelacion, '/relaciones/new')
 api.add_resource(DeleteRelacion, '/relaciones/delete')
+api.add_resource(GetUsuarioArchivos, '/archivos/get/<string:cedula_paciente>')
 api.add_resource(AgregarArchivo, '/archivos/new')
 api.add_resource(DeleteArchivo, '/archivos/delete')
+api.add_resource(UpdateArchivo, '/archivos/update')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

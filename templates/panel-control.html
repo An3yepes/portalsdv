@@ -17,6 +17,15 @@
 				location.href = '/admin'
 			});
 		}
+		function delete_pacientes(){
+			var pacientesDel = new Array();
+			var pacientesSeleccionados = $('.PacientesDel').map((_,paciente) => ( paciente.checked == true ? paciente.value : null )).get()
+			$.post("/usuarios/delete_varios", { id_usuarios:pacientesSeleccionados } ).done(function( data ) {
+				alert( data);
+				//location.href = '/admin'
+			});
+	
+		}
 	</script>
 </head>
 <body>
@@ -45,6 +54,9 @@
 				<div class="agregar-button">
 					<a href="/agregar-paciente"><i class="icono-agregar fas fa-plus"></i></a>
 				</div>
+				<div class="eliminar-button">
+					<a href="javascript:delete_pacientes();"><i class="icono-agregar fas fa-trash-alt"></i></a>
+				</div>
 			</div>
 			<form action="/admin" method="get">
 				<div class="buscador">
@@ -55,7 +67,7 @@
 				</div>
 			</form>
 			<form action="/admin" method="get">
-				<button type="submit">Borrar busquedas</button>
+				<button type="submit" class="agregar-button">Borrar busqueda</button>
 			</form>
 			<br>
 			{% with messages = get_flashed_messages(category_filter=["pacientes"]) %}
@@ -73,14 +85,16 @@
 
 			<div class="lista-pacientes-busqueda-seleccion">
 				<div class="lista-pacientes-titulo-seleccion">
-					<div>FECHA CREACIÓN</div>
+					<div></div>
+					<div>F. CREACIÓN</div>
 					<div>DOCUMENTO</div>
 					<div>NOMBRES Y APELLIDOS</div>
 					<div>EDITAR</div>
 					<div>ELIMINAR</div>
 				</div>
-				{% for paciente in pacientes %}
+				{% for paciente in pacientes.items %}
 				<div class="lista-pacientes-contenido-seleccion">
+					<div><input type="checkbox" class="PacientesDel" value="{{paciente['id']}}"></div>
 					<div>{{paciente['fechaCreacionUsuario']}}</div>
 					<div>{{paciente['cedula']}}</div>
 					<div>{{paciente['nombre']}} {{paciente['apellido']}}</div>
@@ -88,9 +102,17 @@
 						<div class="eliminar-buttonq"><a href="javascript:delete_usuario({{paciente['id']}});"><i class="icono-agregarq fas fa-trash-alt"></i></a></div>
 				</div>
 				{% endfor %}
-				<div class="main-paginacion-examenes">
-					Paginacion
+				<div>
+					{% if pacientes.has_prev %}
+						<a href="{{ url_for('admin', page=pacientes.prev_num) }}"><<< Atras</a>
+					{% endif %}
 				</div>
+				<div>					
+					{% if pacientes.has_next %}
+						<a href="{{ url_for('admin', page=pacientes.next_num) }}">Siguiente >>></a>
+					{% endif %}
+				</div>
+				{{ pagination.links }}
 			</div>
 		</section>
 		
@@ -102,7 +124,7 @@
 					<a href="/agregar-medico"><i class="icono-agregar fas fa-plus"></i></a>
 				</div>
 			</div>
-			<form action="/admin" method="get">
+			<form action="/admin" method="post">
 				<div class="buscador">
 					<input class="input-campo_busqueda" type="text" name="remisor" id="remisor">
 					<div class="buscador-button">
@@ -110,6 +132,10 @@
 					</div>
 				</div>
 			</form>
+			<form action="/admin" method="get">
+				<button type="submit" class="agregar-button">Borrar busqueda</button>
+			</form>
+			<br>
 			{% with messages = get_flashed_messages(category_filter=["medicos"]) %}
 			{% if messages %}
 			<div class="buscador-alert">
@@ -126,14 +152,16 @@
 
 				<div class="lista-pacientes-busqueda-seleccion">
 					<div class="lista-remisores-titulo-seleccion">
-						<div>F.	 CREACIÓN REMISOR</div>
+						<div></div>
+						<div>F.	 CREACIÓN</div>
 						<div>DOCUMENTO</div>
 						<div>NOMBRES Y APELLIDOS</div>
 						<div>EDITAR</div>
 						<div>ELIMINAR</div>
 					</div>
-					{% for remisor in remisores %}
+					{% for remisor in remisores.items %}
 					<div class="lista-remisores-contenido-seleccion">
+						<div><input type="checkbox"></div>
 						<div>{{remisor['fechaCreacionUsuario']}}</div>
 						<div>{{remisor['cedula']}}</div>
 						<div>{{remisor['nombre']}} {{remisor['apellido']}}</div>
@@ -141,13 +169,11 @@
 						<div class="eliminar-buttonq"><a href="javascript:delete_usuario({{remisor['id']}});"><i class="icono-agregarq fas fa-trash-alt"></i></a></div>
 					</div>
 					{% endfor %}
-					<div class="main-paginacion-examenes">
-						Paginacion
-					</div>
 			</div>
 		</section>
 	</main>
-
+<section>
+</section>
 	<footer>
 		<div class="info-contacto">
 			<p>Si tienes algún inconveniente con los resultados puedes escribirnos a <span>examenes@sdiagnosticovisual.com</span> o
